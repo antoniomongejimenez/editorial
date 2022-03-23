@@ -15,7 +15,11 @@ class MonografiaController extends Controller
      */
     public function index()
     {
-        //
+        $monografias = Monografia::all();
+
+        return view('monografias.index', [
+            'monografias' => $monografias,
+        ]);
     }
 
     /**
@@ -25,7 +29,11 @@ class MonografiaController extends Controller
      */
     public function create()
     {
-        //
+        $monografia = new Monografia();
+
+        return view('monografias.create', [
+            'monografia' => $monografia
+        ]);
     }
 
     /**
@@ -36,7 +44,10 @@ class MonografiaController extends Controller
      */
     public function store(StoreMonografiaRequest $request)
     {
-        //
+        $validados = $request->validated();
+        $monografia = new Monografia($validados);
+        $monografia->save();
+        return redirect()->route('monografias.index');
     }
 
     /**
@@ -47,7 +58,9 @@ class MonografiaController extends Controller
      */
     public function show(Monografia $monografia)
     {
-        //
+        return view('monografias.show', [
+            'monografia' => $monografia->with('articulos')->withSum('articulos', 'num_paginas')->find($monografia->id),
+        ]);
     }
 
     /**
@@ -58,7 +71,9 @@ class MonografiaController extends Controller
      */
     public function edit(Monografia $monografia)
     {
-        //
+        return view('monografias.edit', [
+            'monografia' => $monografia,
+        ]);
     }
 
     /**
@@ -70,7 +85,12 @@ class MonografiaController extends Controller
      */
     public function update(UpdateMonografiaRequest $request, Monografia $monografia)
     {
-        //
+        $validados = $request->validated();
+        $monografia->titulo = $validados['titulo'];
+        $monografia->anyo = $validados['anyo'];
+        $monografia->save();
+
+        return redirect()->route('monografias.index')->with('success', 'Monografia modificada');
     }
 
     /**
@@ -81,6 +101,18 @@ class MonografiaController extends Controller
      */
     public function destroy(Monografia $monografia)
     {
-        //
+        if ($monografia->articulos()->count() === 0) {
+            $monografia->delete();
+            return redirect()->route('monografias.index')->with('success', 'Monografia borrada con exito');
+        }
+        return redirect()->route('monografias.index')->with('error', 'Esta monografia tiene articulos asociados.');
+    }
+
+
+    public function autores(Monografia $monografia)
+    {
+        return view('monografias.autores', [
+            'monografia' => $monografia,
+        ]);
     }
 }
